@@ -34,3 +34,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# api
+api/**/.venv/
+
+api/**/*.pyc
+api/**/__pycache__/
+
+api/**/instance/
+
+api/**/*/.pytest_cache/
+api/**/*/.coverage
+api/**/htmlcov/
+
+api/**/dist/
+api/**/build/
+api/**/*.egg-info/

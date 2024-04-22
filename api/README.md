@@ -21,5 +21,5 @@ The server will return the anonymized CSV data as a JSON array of objects.
 
 ## Text Anonymization
 To anonymize text data, send a POST request to /api/anonymize/text/ with the following payload:
-- **text:(()) The text to be anonymized.
+- **text:** The text to be anonymized.
 The server will return the anonymized text as a string.

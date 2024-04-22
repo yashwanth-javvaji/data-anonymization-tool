@@ -5,7 +5,8 @@ from presidio_analyzer import AnalyzerEngine
 from presidio_analyzer.nlp_engine import NlpEngineProvider
 from presidio_anonymizer import AnonymizerEngine
 from pydantic import BaseModel
-from helpers import TransformerRecognizer
+
+from ..helpers import TransformerRecognizer
 
 DEFAULT_ANOYNM_ENTITIES = [
     # Global

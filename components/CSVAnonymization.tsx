@@ -56,7 +56,7 @@ const CSVAnonymization: React.FC<CSVAnonymizationProps> = ({ onError }) => {
         formData.append('column_metadata', JSON.stringify(columnMetadata));
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/anonymize/csv`, {
+            const response = await fetch(`/api/anonymize/csv`, {
                 method: 'POST',
                 body: formData,
             });
