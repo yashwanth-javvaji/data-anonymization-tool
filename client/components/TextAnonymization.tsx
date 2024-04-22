@@ -15,7 +15,7 @@ const TextAnonymization: React.FC<TextAnonymizationProps> = ({ onError }) => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://127.0.0.1:5000/api/anonymize/text/', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/anonymize/text/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -23,14 +23,15 @@ const TextAnonymization: React.FC<TextAnonymizationProps> = ({ onError }) => {
                 body: JSON.stringify({ text }),
             });
 
-            const data = await response.json();
-            if (data.error) {
-                onError(data.error);
-            } else {
-                setAnonymizedText(data);
+            if (response.ok) {
+                const res = await response.json();
+                if (res.status_code === 200) {
+                    setAnonymizedText(res.text);
+                } else {
+                    onError(res.detail);
+                }
             }
         } catch (error) {
-            console.error('Error:', error);
             onError('An error occurred while processing the request.');
         } finally {
             setLoading(false);

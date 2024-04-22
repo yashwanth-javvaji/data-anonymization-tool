@@ -56,20 +56,21 @@ const CSVAnonymization: React.FC<CSVAnonymizationProps> = ({ onError }) => {
         formData.append('column_metadata', JSON.stringify(columnMetadata));
 
         try {
-            const response = await fetch('http://127.0.0.1:5000/api/anonymize/csv', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/anonymize/csv`, {
                 method: 'POST',
                 body: formData,
             });
 
-            const data = await response.json();
-            if (data.error) {
-                onError(data.error);
-            } else {
-                // Add an id to each row for the DataGrid component
-                setAnonymizedData(data.map((row: any, index: number) => ({ id: index, ...row })));
+            if (response.ok) {
+                const res = await response.json();
+                if (res.status_code === 200) {
+                    // Add an id to each row for the DataGrid component
+                    setAnonymizedData(res.data.map((row: any, index: number) => ({ id: index, ...row })));
+                } else {
+                    onError(res.detail);
+                }
             }
         } catch (error) {
-            console.error('Error:', error);
             onError('An error occurred while processing the request.');
         } finally {
             setLoading(false);
@@ -120,7 +121,7 @@ const CSVAnonymization: React.FC<CSVAnonymizationProps> = ({ onError }) => {
                             columns={columns}
                             getRowId={(row) => row.name}
                             processRowUpdate={(updatedRow) => handleMetadataChange(updatedRow as ColumnMetadata)}
-                            onProcessRowUpdateError={(error) => console.error('Error:', error)}
+                            onProcessRowUpdateError={(error) => console.error(error)}
                         />
                     </div>
                 </div>

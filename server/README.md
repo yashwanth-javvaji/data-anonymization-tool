@@ -7,8 +7,8 @@ This is a Flask-based server that provides APIs for anonymizing sensitive data i
 
 ## Running the application
 - Install the required dependencies: ```pip install -r requirements.txt```
-- Start the Flask server: ```flask --app . run```
-- The server will be running at http://localhost:5000.
+- Start the Flask server: ```uvicorn main:app --reload```
+- The server will be running at http://localhost:8000.
 
 ## CSV Anonymization
 To anonymize a CSV file, send a POST request to /api/anonymize/csv/ with the following payload:
