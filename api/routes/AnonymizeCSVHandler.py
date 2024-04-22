@@ -47,55 +47,46 @@ def generalize_string(x: str) -> str:
     return ' '.join([token.ent_type_ if token.ent_type_ else token.text for token in tokens])
     
 def anonymize_date(df: pd.DataFrame, column: ColumnMetadata) -> pd.DataFrame:
-    match column.sensitivityType:
-        case SensitivityType.IDENTIFIER:
-            # Anonymize the identifier by hashing the date
-            df[column.name] = df[column.name].apply(lambda x: hashlib.sha256(str(x).encode()).hexdigest())
-        case SensitivityType.INSENSITIVE:
-            # Do nothing for non-sensitive columns
-            pass
-        case SensitivityType.QUASI_IDENTIFIER:
-            # Anonymize the quasi-identifier by generalizing the date
-            df[column.name] = df[column.name].apply(lambda x: x.replace(day = 1))
-        case SensitivityType.SENSITIVE:
-            # Anonymize the date by randomizing the date within the time period
-            min_date = df[column.name].min()
-            max_date = df[column.name].max()
-            df[column.name] = df[column.name].apply(lambda x: min_date + pd.Timedelta(days = np.random.randint(0, (max_date - min_date).days)))
+    if column.sensitivityType == SensitivityType.IDENTIFIER:
+        df[column.name] = df[column.name].apply(lambda x: hashlib.sha256(str(x).encode()).hexdigest())
+    elif column.sensitivityType == SensitivityType.INSENSITIVE:
+        pass # Do nothing for non-sensitive columns
+    elif column.sensitivityType == SensitivityType.QUASI_IDENTIFIER:
+        df[column.name] = df[column.name].apply(lambda x: x.replace(day = 1))
+    elif column.sensitivityType == SensitivityType.SENSITIVE:
+        min_date = df[column.name].min()
+        max_date = df[column.name].max()
+        df[column.name] = df[column.name].apply(lambda x: min_date + pd.Timedelta(days = np.random.randint(0, (max_date - min_date).days)))
+    else:
+        raise Exception(f"Invalid sensitivity type '{column.sensitivityType}' for date column '{column.name}'")
     
     return df
 
 def anonymize_number(df: pd.DataFrame, column: ColumnMetadata) -> pd.DataFrame:
-    match column.sensitivityType:
-        case SensitivityType.IDENTIFIER:
-            # Anonymize the identifier by hashing the number
-            df[column.name] = df[column.name].apply(lambda x: hashlib.sha256(str(x).encode()).hexdigest())
-        case SensitivityType.INSENSITIVE:
-            # Do nothing for non-sensitive columns
-            pass
-        case SensitivityType.QUASI_IDENTIFIER:
-            # Anonymize the quasi-identifier by binning the number
-            df[column.name] = pd.cut(df[column.name], bins = 5).astype(str)
-        case SensitivityType.SENSITIVE:
-            # Anonymize the sensitive data by adding noise
-            df[column.name] = df[column.name] + np.random.normal(0, 1, len(df))
+    if column.sensitivityType == SensitivityType.IDENTIFIER:
+        df[column.name] = df[column.name].apply(lambda x: hashlib.sha256(str(x).encode()).hexdigest())
+    elif column.sensitivityType == SensitivityType.INSENSITIVE:
+        pass # Do nothing for non-sensitive columns
+    elif column.sensitivityType == SensitivityType.QUASI_IDENTIFIER:
+        df[column.name] = pd.cut(df[column.name], bins = 5).astype(str)
+    elif column.sensitivityType == SensitivityType.SENSITIVE:
+        df[column.name] = df[column.name] + np.random.normal(0, 1, len(df))
+    else:
+        raise Exception(f"Invalid sensitivity type '{column.sensitivityType}' for number column '{column.name}'")
     
     return df
 
 def anonymize_string(df: pd.DataFrame, column: ColumnMetadata) -> pd.DataFrame:
-    match column.sensitivityType:
-        case SensitivityType.IDENTIFIER:
-            # Anonymize the identifier by hashing the string
-            df[column.name] = df[column.name].apply(lambda x: hashlib.sha256(x.encode()).hexdigest())
-        case SensitivityType.INSENSITIVE:
-            # Do nothing for non-sensitive columns
-            pass
-        case SensitivityType.QUASI_IDENTIFIER:
-            # Anonymize the quasi-identifier by generalizing using hierarchy
-            df[column.name] = df[column.name].apply(generalize_string)
-        case SensitivityType.SENSITIVE:
-            # Anonymize the sensitive data by masking all characters except the first character
-            df[column.name] = df[column.name].apply(lambda x: x[0] + '*' * (len(x) - 1) if len(x) > 1 else x)
+    if column.sensitivityType == SensitivityType.IDENTIFIER:
+        df[column.name] = df[column.name].apply(lambda x: hashlib.sha256(x.encode()).hexdigest())
+    elif column.sensitivityType == SensitivityType.INSENSITIVE:
+        pass # Do nothing for non-sensitive columns
+    elif column.sensitivityType == SensitivityType.QUASI_IDENTIFIER:
+        df[column.name] = df[column.name].apply(generalize_string)
+    elif column.sensitivityType == SensitivityType.SENSITIVE:
+        df[column.name] = df[column.name].apply(lambda x: x[0] + '*' * (len(x) - 1) if len(x) > 1 else x)
+    else:
+        raise Exception(f"Invalid sensitivity type '{column.sensitivityType}' for string column '{column.name}'")
     
     return df
 
@@ -107,13 +98,14 @@ def anonymize(df: pd.DataFrame, column_metadata: list[ColumnMetadata]) -> pd.Dat
             raise Exception(f"Column '{column.name}' not found in the CSV file")
         
         # Anonymize the column based on the data type
-        match column.dataType:
-            case DataType.DATE:
-                df = anonymize_date(df, column)
-            case DataType.NUMBER:
-                df = anonymize_number(df, column)
-            case DataType.STRING:
-                df = anonymize_string(df, column)
+        if column.dataType == DataType.DATE:
+            df = anonymize_date(df, column)
+        elif column.dataType == DataType.NUMBER:
+            df = anonymize_number(df, column)
+        elif column.dataType == DataType.STRING:
+            df = anonymize_string(df, column)
+        else:
+            raise Exception(f"Invalid data type '{column.dataType}' for column '{column.name}'")
                 
     return df
 
